@@ -1,6 +1,6 @@
 import json, re, importlib, sys, os
 from time import sleep
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Callable, Iterator
 from santas_little_helpers import aoc_root, config
@@ -23,25 +23,30 @@ def get_submission_history(today: date, level: int):
     return json.load(f)
 
 
+def wait_until(unlock_time):
+  while datetime.now() < unlock_time:
+    delta = unlock_time - datetime.now()
+    print(f'Throttled, waiting {delta.total_seconds()} seconds before retry...', end='\r', flush=True)
+    sleep(0.1)
+  print()
+
+
 def __handle_response__(today: date, answer, level, submission_history, text):
   file_path = aoc_submission_history / f'day{today.day:02}.{str(level)}.json'
 
-  if 'gave an answer too recently' in text:
-    match = aoc_response_time_re.search(text)
-    minutes = match.group('minutes')
-    seconds = 1 + int(match.group('seconds'))
-    if minutes is not None:
-      seconds += 60 * int(minutes)
-    for t in reversed(range(1, seconds)):
-      print(f'Throttled, waiting {t} seconds before retry...', end='\r', flush=True)
-      sleep(1)
-    print()
-    return submit_answer(today, answer, level)
-
-  response = {
+  submission_history[str(answer)] = response = {
     'timestamp': datetime.now().isoformat(),
     'success': False
   }
+  
+  if 'gave an answer too recently' in text:
+    match = aoc_response_time_re.search(text)
+    minutes = match.group('minutes')
+    seconds = int(match.group('seconds')) + 0.3
+    if minutes is not None:
+      seconds += 60 * int(minutes)
+    unlock_time = datetime.now() + timedelta(seconds=seconds)
+    response['unlock_time'] = unlock_time.isoformat()
 
   if 'not the right answer' in text:
     print(f'Wrong answer', end='')
@@ -63,12 +68,16 @@ def __handle_response__(today: date, answer, level, submission_history, text):
     response['success'] = True
     print("🎄 🌟 Advent of Code done, great job! 🌟 🎄")
   else:
-    print(text)
+    print(f'Unrecognised response: {text}')
 
-  submission_history[str(answer)] = response
   with file_path.open('w') as f:
     json.dump(submission_history, f, indent=4)
-  return response['success']
+
+  if unlock_time is not None:
+    wait_until(unlock_time)
+    return submit_answer(today, answer, level)
+  else:
+    return response['success']
 
 
 def is_solved(submission_history):
@@ -101,15 +110,20 @@ def submit_answer(today: date, answer, level: int = 1, force = False) -> None:
       response = submission_history[str(answer)]
       print(f"Already tried that at {response['timestamp']}", end='')
       if 'hint' in response:
-        print(f", hint: {response['hint']}", end='')
+        print(f", hint was: {response['hint']}", end='')
       print()
       return False
+    if len(submission_history) > 0:
+      last = max(submission_history.values(), key=lambda x: datetime.fromisoformat(x['timestamp']))
+      if 'unlock_time' in last:
+        unlock_time = datetime.fromisoformat(last['unlock_time'])
+        wait_until(unlock_time)
 
   request, status_codes, BeautifulSoup = import_requests()
   url = f'https://adventofcode.com/{today.year}/day/{today.day}/answer'
   payload = {'level': level, 'answer': answer}
   res = request('POST', url, cookies=config, data=payload)
-  with (aoc_root / 'last_response.html').open('wb') as f2:
+  with (aoc_submission_history / 'last_response.html').open('wb') as f2:
     f2.write(res.content)
 
   soup = BeautifulSoup(res.content, 'html.parser')
