@@ -4,16 +4,22 @@ today = day(2023, 1)
 DIGITS = ["one","two","three","four","five","six","seven","eight","nine"]
 
 
+def find_num(line, words, reverse=False):
+  indices = range(len(line))
+  if reverse:
+    indices = reversed(indices)
+  for idx in indices:
+    if line[idx].isdigit():
+      return line[idx]
+    if words:
+      for n, word in enumerate(DIGITS):
+        if line[idx:].startswith(word):
+          return str(n + 1)
+
+
 def read_calibration_values(document, words=False):
   for line in document:
-    nums = []
-    for offset in range(len(line)):
-      for n, word in enumerate(DIGITS):
-        if words and line[offset:].startswith(word):
-          nums.append(str(n + 1))
-      if line[offset].isdigit():
-        nums.append(line[offset])
-    yield int(nums[0] + nums[-1])
+    yield int(find_num(line, words) + find_num(line, words, True))
 
 
 def main():
