@@ -34,9 +34,8 @@ def wait_until(unlock_time):
 def __handle_response__(today: date, answer, level, submission_history, text):
   file_path = aoc_submission_history / f'day{today.day:02}.{str(level)}.json'
 
-  submission_history[str(answer)] = response = {
-    'timestamp': datetime.now().isoformat(),
-    'success': False
+  response = {
+    'timestamp': datetime.now().isoformat()
   }
   
   if 'gave an answer too recently' in text:
@@ -49,6 +48,7 @@ def __handle_response__(today: date, answer, level, submission_history, text):
     response['unlock_time'] = unlock_time.isoformat()
 
   if 'not the right answer' in text:
+    response['success'] = False
     print(f'Wrong answer', end='')
     hint = None
     if 'too high' in text:
@@ -69,6 +69,14 @@ def __handle_response__(today: date, answer, level, submission_history, text):
     print("🎄 🌟 Advent of Code done, great job! 🌟 🎄")
   else:
     print(f'Unrecognised response: {text}')
+    response['unknown_text'] = text
+
+  key = str(answer)
+  if 'success' not in response:
+    key = f'throttled_{response['timestamp']}'
+    response['answer'] = answer
+
+  submission_history[key] = response
 
   with file_path.open('w') as f:
     json.dump(submission_history, f, indent=4)
@@ -108,11 +116,12 @@ def submit_answer(today: date, answer, level: int = 1, force = False) -> None:
   if not force:
     if str(answer) in submission_history:
       response = submission_history[str(answer)]
-      print(f"Already tried that at {response['timestamp']}", end='')
-      if 'hint' in response:
-        print(f", hint was: {response['hint']}", end='')
-      print()
-      return False
+      if 'success' in response:
+        print(f"Already tried that at {response['timestamp']}", end='')
+        if 'hint' in response:
+          print(f", hint was: {response['hint']}", end='')
+        print()
+        return False
     if len(submission_history) > 0:
       last = max(submission_history.values(), key=lambda x: datetime.fromisoformat(x['timestamp']))
       if 'unlock_time' in last:
