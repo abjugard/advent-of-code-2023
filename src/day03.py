@@ -1,5 +1,5 @@
 from santas_little_helpers import day, get_data, timed
-from santas_little_utils import *
+from santas_little_utils import build_dict_map, mul, neighbours
 
 today = day(2023, 3)
 
@@ -12,27 +12,25 @@ def update_part(manual, p):
 
 
 def parse_manual(manual):
-  manual_dict = build_dict_map(manual)[0]
-  part_nos = []
-  is_part = False
-  part = ''
-  gears = []
+  manual_dict, (w, _) = build_dict_map(manual)
+  part_nos, gears = [], []
+  part, is_part = '', False
   for y, line in enumerate(manual):
     for x, c in enumerate(line):
-      if not c.isdigit():
-        if is_part and part != '':
-          ps = []
-          for xp in range(x-len(part), x):
-            ps.append((xp, y))
-          part_nos.append((set(ps), int(part)))
-        if c == '*':
-          gears.append((x, y))
-        part = ''
-        is_part = False
+      if c == '*':
+        gears.append((x, y))
       if c.isdigit():
         part += c
-        if not is_part:
-          is_part = update_part(manual_dict, (x, y))
+        is_part |= update_part(manual_dict, (x, y))
+      if not c.isdigit() or x == w-1:
+        if is_part and part != '':
+          ps = set()
+          for xp in range(x-len(part), x):
+            ps.add((xp, y))
+          part_nos.append((ps, int(part)))
+        part, is_part = '', False
+
+  yield sum(value for _, value in part_nos)
 
   gear_ratios = []
   for p in gears:
@@ -45,14 +43,14 @@ def parse_manual(manual):
     if len(matches) == 2:
       gear_ratios.append(mul(matches))
 
-  return sum(value for _, value in part_nos), sum(gear_ratios)
+  yield sum(gear_ratios)
 
 
 def main():
-  inp = list(get_data(today))
-  star1, star2 = parse_manual(inp)
-  print(f'{today} star 1 = {star1}')
-  print(f'{today} star 2 != {star2}')
+  manual = list(get_data(today))
+  star_gen = parse_manual(manual)
+  print(f'{today} star 1 = {next(star_gen)}')
+  print(f'{today} star 2 = {next(star_gen)}')
 
 
 if __name__ == '__main__':
