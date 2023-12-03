@@ -47,14 +47,15 @@ def build_dict_map(map_data, conv_func=None, criteria=None):
   the_map = dict()
   def get_value(c):
     return c if conv_func is None else conv_func(c)
-  h, w = 0, 0
   for y, xs in enumerate(map_data):
     for x, c in enumerate(xs):
       if criteria is None or c in criteria:
         the_map[(x, y)] = get_value(c)
-      w = max(w, x)
-    h = max(h, y)
-  return the_map, (w+1, h+1)
+    else:
+      w = x + 1
+  else:
+    h = y + 1
+  return the_map, (w, h)
 
 
 def neighbours(p, borders=None, diagonals=True):
