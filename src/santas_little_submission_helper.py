@@ -26,7 +26,7 @@ def get_submission_history(today: date, level: int):
 def wait_until(unlock_time):
   while datetime.now() < unlock_time:
     delta = unlock_time - datetime.now()
-    print(f'Throttled, waiting {delta.total_seconds()} seconds before retry...', end='\r', flush=True)
+    print(f'\rThrottled, waiting {delta.total_seconds()} seconds before retry...', end='', flush=True)
     sleep(0.1)
   print()
 
@@ -66,8 +66,8 @@ def __handle_response__(today: date, answer, level, submission_history, text):
     print(f'Correct answer! {emoji}')
   elif 'finished every puzzle' in text:
     response['success'] = True
-    print("🎄 🌟 Advent of Code done, great job! 🌟 🎄")
-  elif 'Did you already complete it?' in text:
+    print('🎄 🌟 Advent of Code done! 🌟 🎄')
+  elif 'already complete' in text:
     response['success'] = True
     answer = 'unknown, see previous attempts'
     print('Correct answer has been submitted already, check the log or the site')
@@ -89,6 +89,9 @@ def __handle_response__(today: date, answer, level, submission_history, text):
     wait_until(unlock_time)
     return submit_answer(today, answer, level)
   else:
+    if response['success'] and (today.day, level) == (25, 1):
+      print('AoC complete, autosubmitting 25 part 2')
+      autosubmission_success = submit_answer(today, 'Merry christmas team!', level=2, force=True)
     return response['success']
 
 
