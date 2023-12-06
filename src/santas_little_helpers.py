@@ -100,23 +100,6 @@ def get_data(today: date = date.today(), ops: list = base_ops, groups: bool = Fa
       yield format_line(line, op_chain)
 
 
-def submit_answer(today: date, answer: str, level: int = 1) -> None:
-  if type(answer) not in [str, int]:
-    print(f'Ignoring answer of type {type(answer)}, submission must be str or int')
-    return
-  if answer in ['', 0]:
-    print('Ignoring empty answer')
-    return
-  from bs4 import BeautifulSoup
-  request, status_codes = import_requests()
-  url = f'https://adventofcode.com/{today.year}/day/{today.day}/answer'
-  payload = {'level': level, 'answer': answer}
-  res = request('POST', url, cookies=config, data=payload)
-  soup = BeautifulSoup(res.content, 'html.parser')
-  for content in soup.find_all('article'):
-    print(content.text)
-
-
 def time_fmt(delta: float) -> (float, str):
   if delta < 1e-6:
     return 1e9, 'ns'

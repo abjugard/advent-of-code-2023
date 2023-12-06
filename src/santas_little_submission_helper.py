@@ -34,7 +34,7 @@ def wait_until(unlock_time):
 def __handle_response__(today: date, answer, level, submission_history, text):
   file_path = aoc_submission_history / f'day{today.day:02}.{str(level)}.json'
 
-  response = {
+  new_entry = {
     'timestamp': datetime.now().isoformat()
   }
   
@@ -45,10 +45,10 @@ def __handle_response__(today: date, answer, level, submission_history, text):
     if minutes is not None:
       seconds += 60 * int(minutes)
     unlock_time = datetime.now() + timedelta(seconds=seconds)
-    response['unlock_time'] = unlock_time.isoformat()
+    new_entry['unlock_time'] = unlock_time.isoformat()
 
   if 'not the right answer' in text:
-    response['success'] = False
+    new_entry['success'] = False
     print(f'Wrong answer', end='')
     hint = None
     if 'too high' in text:
@@ -59,28 +59,28 @@ def __handle_response__(today: date, answer, level, submission_history, text):
       hint = 'correct for another player'
     if hint is not None:
       print(f', hint: {hint}')
-      response['hint'] = hint
+      new_entry['hint'] = hint
   elif 'the right answer' in text:
-    response['success'] = True
+    new_entry['success'] = True
     emoji = '⭐️' if level == 1 else '🌟'
     print(f'Correct answer! {emoji}')
   elif 'finished every puzzle' in text:
-    response['success'] = True
+    new_entry['success'] = True
     print('🎄 🌟 Advent of Code done! 🌟 🎄')
   elif 'already complete' in text:
-    response['success'] = True
+    new_entry['success'] = True
     answer = 'unknown, see previous attempts'
     print('Correct answer has been submitted already, check the log or the site')
   else:
     print(f'Unrecognised response: {text}')
-    response['unknown_text'] = text
+    new_entry['unknown_text'] = text
 
   key = str(answer)
-  if 'success' not in response:
-    key = f'throttled_{response['timestamp']}'
-    response['answer'] = answer
+  if 'success' not in new_entry:
+    key = f'throttled_{new_entry['timestamp']}'
+    new_entry['answer'] = answer
 
-  submission_history[key] = response
+  submission_history[key] = new_entry
 
   with file_path.open('w') as f:
     json.dump(submission_history, f, indent=4)
@@ -89,14 +89,14 @@ def __handle_response__(today: date, answer, level, submission_history, text):
     wait_until(unlock_time)
     return submit_answer(today, answer, level)
   else:
-    if response['success'] and (today.day, level) == (25, 1):
+    if new_entry['success'] and (today.day, level) == (25, 1):
       print('AoC complete, autosubmitting 25 part 2')
       autosubmission_success = submit_answer(today, 'Merry christmas team!', level=2, force=True)
-    return response['success']
+    return new_entry['success']
 
 
 def is_solved(submission_history):
-  return any(response['success'] == True for response in submission_history.values() if 'success' in response)
+  return any(entry['success'] == True for entry in submission_history.values() if 'success' in entry)
 
 
 def import_requests():
@@ -122,11 +122,11 @@ def submit_answer(today: date, answer, level: int = 1, force = False) -> None:
     return True
   if not force:
     if str(answer) in submission_history:
-      response = submission_history[str(answer)]
-      if 'success' in response:
-        print(f"Already tried that at {response['timestamp']}", end='')
-        if 'hint' in response:
-          print(f", hint was: {response['hint']}", end='')
+      entry = submission_history[str(answer)]
+      if 'success' in entry:
+        print(f"Already tried that at {entry['timestamp']}", end='')
+        if 'hint' in entry:
+          print(f", hint was: {entry['hint']}", end='')
         print()
         return False
     if len(submission_history) > 0:
@@ -139,8 +139,8 @@ def submit_answer(today: date, answer, level: int = 1, force = False) -> None:
   url = f'https://adventofcode.com/{today.year}/day/{today.day}/answer'
   payload = {'level': level, 'answer': answer}
   res = request('POST', url, cookies=config, data=payload)
-  with (aoc_submission_history / 'last_response.html').open('wb') as f2:
-    f2.write(res.content)
+  with (aoc_submission_history / f'day{today.day:02}.{str(level)}-last_response.html').open('wb') as f:
+    f.write(res.content)
 
   soup = BeautifulSoup(res.content, 'html.parser')
   content = soup.find_all('article')[0]
