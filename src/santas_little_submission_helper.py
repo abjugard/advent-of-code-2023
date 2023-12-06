@@ -67,6 +67,10 @@ def __handle_response__(today: date, answer, level, submission_history, text):
   elif 'finished every puzzle' in text:
     response['success'] = True
     print("🎄 🌟 Advent of Code done, great job! 🌟 🎄")
+  elif 'Did you already complete it?' in text:
+    response['success'] = True
+    answer = 'unknown, see previous attempts'
+    print('Correct answer has been submitted already, check the log or the site')
   else:
     print(f'Unrecognised response: {text}')
     response['unknown_text'] = text
@@ -89,7 +93,7 @@ def __handle_response__(today: date, answer, level, submission_history, text):
 
 
 def is_solved(submission_history):
-  return any(response['success'] == True for response in submission_history.values())
+  return any(response['success'] == True for response in submission_history.values() if 'success' in response)
 
 
 def import_requests():
