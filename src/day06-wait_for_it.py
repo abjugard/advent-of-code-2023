@@ -13,10 +13,8 @@ def ways_to_win(t, d):
 
 
 def many_races(times, distances):
-  ways = []
   for t, d in zip(times, distances):
-    ways.append(ways_to_win(int(t), int(d)))
-  return mul(ways)
+    yield ways_to_win(int(t), int(d))
 
 
 def big_race(times, distances):
@@ -31,7 +29,7 @@ def parse(line):
 
 def main():
   inp = list(get_data(today, [('func', parse)]))
-  print(f'{today} star 1 = {many_races(*inp)}')
+  print(f'{today} star 1 = {mul(many_races(*inp))}')
   print(f'{today} star 2 = {big_race(*inp)}')
 
 
