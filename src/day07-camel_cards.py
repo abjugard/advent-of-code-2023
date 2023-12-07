@@ -15,26 +15,22 @@ def ordering(h1, h2, ranks):
 
 
 def get_class(hand, use_jokers):
-  c = Counter(hand)
+  counts = Counter(hand)
   jokers = 0
   if use_jokers:
-    jokers = c['J']
-    del c['J']
+    jokers = counts['J']
+    del counts['J']
     if jokers == 5:
       return 6
-  counts = c.values()
+  counts = list(sorted(counts.values(), reverse=True))
+  counts[0] += jokers
 
-  two_pairs = len([v for v in counts if v == 2]) == 2
-  if 5 in counts or max(counts) + jokers == 5: return 6
-  if 4 in counts or max(counts) + jokers == 4: return 5
-  if two_pairs and jokers == 1:                return 4
-  if 3 in counts and 2 in counts:              return 4
-  if jokers == 2:                              return 3
-  if 3 in counts:                              return 3
-  if 2 in counts and jokers == 1:              return 3
-  if two_pairs:                                return 2
-  if jokers == 1:                              return 1
-  if 2 in counts:                              return 1
+  if 5 in counts:                 return 6
+  if 4 in counts:                 return 5
+  if 3 in counts and 2 in counts: return 4
+  if 3 in counts:                 return 3
+  if [2, 2] == counts[:2]:        return 2
+  if 2 in counts:                 return 1
   return 0
 
 
