@@ -77,7 +77,7 @@ def __handle_response__(today: date, answer, level, submission_history, text):
 
   key = str(answer)
   if 'success' not in new_entry:
-    key = f'throttled_{new_entry['timestamp']}'
+    key = f'throttled_{new_entry["timestamp"]}'
     new_entry['answer'] = answer
 
   submission_history[key] = new_entry
