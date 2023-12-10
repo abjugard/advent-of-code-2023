@@ -34,6 +34,15 @@ class Point:
   @property
   def nw (self): return Point(self.x-1, self.y-1)
 
+  @property
+  def next(self):
+      return {
+        'N': self.n,
+        'E': self.e,
+        'W': self.w,
+        'S': self.s
+      }
+
 
   @property
   def t(self):
@@ -50,7 +59,7 @@ class Point:
 
   @property
   def direct_neighbours(self):
-    return set([self.n, self.e, self.s, self.w, self])
+    return set([self.n, self.e, self.s, self.w])
   @property
   def neighbours(self):
     return [self.nw, self.n, self.ne,
