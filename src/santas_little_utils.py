@@ -45,12 +45,12 @@ def tesseract_parse(inp, lookup=True, chars=alphabet.upper()):
 
 def build_dict_map(map_data, conv_func=None, criteria=None):
   the_map = dict()
-  def get_value(c):
-    return c if conv_func is None else conv_func(c)
+  def get_value(c, p):
+    return c if conv_func is None else conv_func(c, p)
   for y, xs in enumerate(map_data):
     for x, c in enumerate(xs):
       if criteria is None or c in criteria:
-        the_map[(x, y)] = get_value(c)
+        the_map[(x, y)] = get_value(c, (x, y))
     else:
       w = x + 1
   else:
