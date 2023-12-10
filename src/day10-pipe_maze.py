@@ -6,6 +6,7 @@ today = day(2023, 10)
 
 
 OPPOSITE = { 'N': 'S', 'E': 'W', 'W': 'E', 'S': 'N' }
+SHAPE_MAPPER = { '|': 'NS','-': 'WE','L': 'NE','J': 'WN','7': 'WS','F': 'SE' }
 
 
 def travel(the_map, p, coming_from):
@@ -15,8 +16,8 @@ def travel(the_map, p, coming_from):
 
 
 def find_route(the_map):
-  # This part assumes we're starting northbound from S which has an L shape
-  s, coming_from = 0, 'E'
+  first_possible, _ = the_map[start_pos.t]
+  s, coming_from = 0, OPPOSITE[first_possible]
   p = start_pos
   route = set([p.t])
   while True:
@@ -43,24 +44,31 @@ def find_encompassed_area(orig_map, route, w, h):
 
 def conv_func(c, p):
   global start_pos
-  if c == '|': return 'NS'
-  if c == '-': return 'WE'
-  if c == 'L': return 'NE'
-  if c == 'J': return 'WN'
-  if c == '7': return 'WS'
-  if c == 'F': return 'SE'
-  if c == '.': return None
-  if c == 'S': 
+  if c in SHAPE_MAPPER:
+    return SHAPE_MAPPER[c]
+  if c == 'S':
     start_pos = Point(*p)
-    return 'NE'
+  return None
+
+
+def determine_start_shape(the_map):
+  exits = []
+  for d, n in start_pos.next.items():
+    n_possibles = the_map[n.t]
+    if OPPOSITE[d] in n_possibles:
+      exits.append(d)
+  for shape, possibles in SHAPE_MAPPER.items():
+    if all(e in possibles for e in exits):
+      return shape
 
 
 def main():
   map_data = list(get_data(today))
   the_map, d = build_dict_map(map_data, conv_func)
+  shape = determine_start_shape(the_map)
+  the_map[start_pos.t] = SHAPE_MAPPER[shape]
   orig_map, _ = build_dict_map(map_data)
-  # Too lazy to implement proper detection
-  orig_map[start_pos.t] = 'L'
+  orig_map[start_pos.t] = shape
   star1, route = find_route(the_map)
   print(f'{today} star 1 = {star1}')
   print(f'{today} star 2 = {find_encompassed_area(orig_map, route, *d)}')
