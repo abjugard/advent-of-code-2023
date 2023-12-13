@@ -3,39 +3,31 @@ from santas_little_helpers import day, get_data, timed
 today = day(2023, 13)
 
 
-def equal(l, r, tolerance=0):
-  size = min(len(l), len(r))
-  l, r = l[::-1][:size], r[:size]
+def equal_at(pattern, split, tolerance):
+  l, r = pattern[:split][::-1], pattern[split:]
+  size = min(split, len(pattern)-split)
   smudges = 0
-  for ll, rl in zip(l, r):
+  for ll, rl in zip(l[:size], r[:size]):
     for lc, rc in zip(ll, rl):
-      if lc != rc:
-        smudges += 1
+      smudges += lc != rc
       if smudges > tolerance:
-        return False
-  return smudges == tolerance or tolerance == 0
+        return 0
+  return split if smudges == tolerance else 0
 
 
-def score(rows, tolerance=0):
-  cols = [''.join(x) for x in zip(*rows)]
-  left = 0
-  for i in range(len(cols)):
-    if equal(cols[:i], cols[i:], tolerance):
-      left = i
-  top = 0
-  for i in range(len(rows)):
-    if equal(rows[:i], rows[i:], tolerance):
-      top = i
+def reflection_score(rows, tolerance):
+  cols = tuple(zip(*rows))
+  left = max(equal_at(cols, i, tolerance) for i in range(1, len(cols)))
+  top  = max(equal_at(rows, i, tolerance) for i in range(1, len(rows)))
   return 100 * top + left
 
 
 def sum_of_reflections(patterns, tolerance=0):
-  return sum(score(pattern, tolerance) for pattern in patterns)
+  return sum(reflection_score(pattern, tolerance) for pattern in patterns)
 
 
 def main():
-  patterns = get_data(today, groups=True)
-  patterns = [list(pattern) for pattern in patterns]
+  patterns = [tuple(pattern) for pattern in get_data(today, groups=True)]
   print(f'{today} star 1 = {sum_of_reflections(patterns)}')
   print(f'{today} star 2 = {sum_of_reflections(patterns, tolerance=1)}')
 
