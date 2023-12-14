@@ -10,6 +10,12 @@ class Point:
     return Point(self.x + other.x, self.y + other.y)
   def __eq__(self, other):
     return self.x == other.x and self.y == other.y
+  def __lt__(self, other):
+    if self.y < other.y:
+      return True
+    if self.y > other.y:
+      return False
+    return self.x < other.x
   def __hash__(self):
     return 2971215073 * self.x + 433494437 * self.y
   def __iter__(self):
