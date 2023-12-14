@@ -12,7 +12,7 @@ SHAPE_MAPPER = { '|': 'NS','-': 'WE','L': 'NE','J': 'WN','7': 'WS','F': 'SE' }
 def travel(the_map, p, coming_from):
   c1, c2 = the_map[p.t]
   new_dir = c1 if c1 != coming_from else c2
-  return p.next[new_dir], OPPOSITE[new_dir]
+  return p.next(new_dir), OPPOSITE[new_dir]
 
 
 def find_route(the_map):
@@ -53,7 +53,8 @@ def conv_func(c, p):
 
 def determine_start_shape(the_map):
   exits = []
-  for d, n in start_pos.next.items():
+  for d in 'NEWS':
+    n = start_pos.next(d)
     n_possibles = the_map[n.t]
     if OPPOSITE[d] in n_possibles:
       exits.append(d)

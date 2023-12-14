@@ -11,20 +11,20 @@ def tilt(rocks, the_map, direction='N'):
   last_moved = True
 
   def locked(rock):
-    nr = Point(*rock).next[direction].t
+    nr = Point(*rock).next(direction).t
     is_locked = nr not in the_map or the_map[nr] == '#' or nr in cant_move
     if is_locked:
       cant_move.add(rock)
     return is_locked
 
   def can_move(rock):
-    nr = Point(*rock).next[direction].t
+    nr = Point(*rock).next(direction).t
     return not locked(rock) and not (nr in rocks or nr in n_rocks)
 
   def move(rock):
     rock = Point(*rock)
     while can_move(rock.t):
-      rock = rock.next[direction]
+      rock = rock.next(direction)
     return rock.t
 
   while last_moved:
@@ -68,7 +68,7 @@ def init_rocks(the_map):
 def main():
   the_map, (_, h) = build_dict_map(get_data(today))
   rocks = init_rocks(the_map)
-  print(f'{today} star 1 = {sum(h-y for _, y in tilt(rocks, the_map, "N"))}')
+  print(f'{today} star 1 = {sum(h-y for _, y in tilt(rocks, the_map))}')
   print(f'{today} star 2 = {spin_cycle(the_map, h, rocks)}')
 
 

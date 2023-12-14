@@ -40,14 +40,12 @@ class Point:
   @property
   def nw (self): return Point(self.x-1, self.y-1)
 
-  @property
-  def next(self):
-      return {
-        'N': self.n,
-        'E': self.e,
-        'W': self.w,
-        'S': self.s
-      }
+  def next(self, d):
+    match d:
+      case 'N': return self.n
+      case 'E': return self.e
+      case 'W': return self.w
+      case 'S': return self.s
 
 
   @property
