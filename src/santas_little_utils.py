@@ -43,19 +43,31 @@ def tesseract_parse(inp, lookup=True, chars=alphabet.upper()):
     return None
 
 
-def build_dict_map(map_data, conv_func=None, criteria=None):
+def build_dict_map(map_data, conv_func=None, key_func=None, criteria=None):
   the_map = dict()
   def get_value(c, p):
     return c if conv_func is None else conv_func(c, p)
+  def get_key(c, p):
+    return p if key_func is None else key_func(c, p)
   for y, xs in enumerate(map_data):
     for x, c in enumerate(xs):
       if criteria is None or c in criteria:
-        the_map[(x, y)] = get_value(c, (x, y))
+        the_map[get_key(c, (x, y))] = get_value(c, (x, y))
     else:
       w = x + 1
   else:
     h = y + 1
   return the_map, (w, h)
+
+
+def map_frame(w, h):
+  for x in range(w):
+    yield (x, -1)
+    yield (x, w)
+  for y in range(h):
+    yield (-1, y)
+    yield (h, y)
+  return
 
 
 def neighbours(p, borders=None, diagonals=True):
