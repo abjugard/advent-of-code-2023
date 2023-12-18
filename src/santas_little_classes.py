@@ -52,13 +52,8 @@ class Point:
   def t(self):
     return (self.x, self.y)
   @property
-  def copy(self, offset=None):
-    x = self.x
-    y = self.y
-    if offset is not None:
-      x += offset.x
-      y += offset.y
-    return Point(x, y)
+  def copy(self):
+    return Point(self.x, self.y)
 
 
   @property
