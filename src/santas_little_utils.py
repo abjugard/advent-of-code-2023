@@ -1,11 +1,11 @@
 from collections import deque
 from santas_little_helpers import alphabet
 
-directions_8 = [(-1, -1), (0, -1), (1, -1),
-                (-1,  0),          (1,  0),
-                (-1,  1), (0,  1), (1,  1)]
+directions_8 = [('NW', (-1, -1)), ('N', (0, -1)), ('NE', (1, -1)),
+                ('W',  (-1,  0)),                 ('E',  (1,  0)),
+                ('SW', (-1,  1)), ('S', (0,  1)), ('SE', (1,  1))]
 
-directions_4 = [(0, -1), (-1, 0), (1, 0), (0, 1)]
+directions_4 = [('N', (0, -1)), ('W', (-1, 0)), ('E', (1, 0)), ('S', (0, 1))]
 
 
 def get_iterator(variable):
@@ -70,7 +70,7 @@ def map_frame(w, h):
   return
 
 
-def neighbours(p, borders=None, diagonals=True):
+def neighbours(p, borders=None, diagonals=False, labels=False):
   def within_borders(p_n, borders):
     if borders is None:
       return True
@@ -84,10 +84,10 @@ def neighbours(p, borders=None, diagonals=True):
       return h > 0 and 0 <= y_n < h and 0 <= x_n < len(borders[0])
     raise Exception(f'unknown datastructure: {type(borders)}')
   x, y = p
-  for xd, yd in directions_8 if diagonals else directions_4:
+  for label, (xd, yd) in directions_8 if diagonals else directions_4:
     p_n = x + xd, y + yd
     if within_borders(p_n, borders):
-      yield p_n
+      yield label, p_n if labels else p_n
 
 
 def mul(numbers):
