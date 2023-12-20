@@ -87,7 +87,7 @@ def neighbours(p, borders=None, diagonals=False, labels=False):
   for label, (xd, yd) in directions_8 if diagonals else directions_4:
     p_n = x + xd, y + yd
     if within_borders(p_n, borders):
-      yield label, p_n if labels else p_n
+      yield (label, p_n) if labels else p_n
 
 
 def mul(numbers):

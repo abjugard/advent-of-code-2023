@@ -5,7 +5,7 @@ today = day(2023, 3)
 
 
 def near_symbol(manual, p):
-  for n in neighbours(p, borders=manual):
+  for n in neighbours(p, borders=manual, diagonals=True):
     if manual[n] != '.' and not manual[n].isdigit():
       return True
   return False
@@ -33,7 +33,7 @@ def parse_manual(raw_manual):
 
   gear_ratios = []
   for p in gears:
-    gn = set(neighbours(p, borders=manual))
+    gn = set(neighbours(p, borders=manual, diagonals=True))
     matches = []
     for ns, part_no in part_nos:
       if gn & ns:
