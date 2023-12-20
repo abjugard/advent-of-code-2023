@@ -5,18 +5,22 @@ from santas_little_utils import build_dict_map, map_frame
 today = day(2023, 14)
 
 
+sorting = {
+  'N': lambda p:  p.y,
+  'S': lambda p: -p.y,
+  'W': lambda p:  p.x,
+  'E': lambda p: -p.x,
+}
+
+
 def tilt(rocks, fixed, direction='N'):
-  loose = set(rocks)
   locked = set()
-  while loose:
-    for rock in loose.copy():
-      loose.remove(rock)
-      while nr := rock.next(direction):
-        is_locked = nr in locked or nr in fixed
-        if is_locked or nr in loose:
-          break
-        rock = nr
-      (locked if is_locked else loose).add(rock)
+  for rock in sorted(set(rocks), key=sorting[direction]):
+    while nr := rock.next(direction):
+      if nr in locked or nr in fixed:
+        break
+      rock = nr
+    locked.add(rock)
   return tuple(locked)
 
 
