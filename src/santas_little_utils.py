@@ -105,3 +105,7 @@ def transpose(l):
 
 def flatten(list_of_lists):
   return [item for l in list_of_lists for item in l]
+
+
+def ints(num_strings):
+  return list(map(int, num_strings))
