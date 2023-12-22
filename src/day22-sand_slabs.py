@@ -1,6 +1,6 @@
 from santas_little_helpers import day, get_data, timed
 from santas_little_utils import ints
-from collections import defaultdict, deque
+from collections import defaultdict
 from itertools import product
 
 today = day(2023, 22)
@@ -10,29 +10,23 @@ supports_for, supported_by = defaultdict(set), defaultdict(set)
 
 
 def play_tetris(bricks):
-  settled, brick_q = dict(), deque(bricks)
-  while brick_q:
-    z_min, z_max, idx, brick = brick_q.popleft()
+  settled = dict()
+  for z_min, z_max, idx, brick in sorted(bricks):
     max_z, overlaps = 0, []
     for o_idx, (o_brick, o_zr) in settled.items():
       if brick & o_brick:
         mz = max(o_zr)
         max_z = max(max_z, mz)
         overlaps.append((mz, (o_idx, o_brick, o_zr)))
-    overlaps = [t for mz, t in overlaps if mz == max_z]
-    while idx not in settled:
-      zr = range(z_min, z_max)
-      if z_min == 1:
+    skip = z_min-max_z-1 if max_z else z_min-1
+    zr = range(z_min-skip, z_max-skip)
+    if not max_z:
+      settled[idx] = (brick, zr)
+    for mz, (o_idx, other, o_zr) in overlaps:
+      if mz == max_z and any(z-1 in o_zr for z in zr):
         settled[idx] = (brick, zr)
-        break
-      for o_idx, other, o_zr in overlaps:
-        if any(z-1 in o_zr for z in zr):
-          settled[idx] = (brick, zr)
-          supports_for[o_idx].add(idx)
-          supported_by[idx].add(o_idx)
-      skip = z_min-max_z-1 if max_z else z_min-1
-      z_min -= skip
-      z_max -= skip
+        supports_for[o_idx].add(idx)
+        supported_by[idx].add(o_idx)
 
 
 def chain_reaction(brick_id, is_falling=set(), part1=False):
@@ -57,7 +51,7 @@ def parse(line):
 
 
 def main():
-  bricks = list(sorted(get_data(today, [('func', parse)])))
+  bricks = list(get_data(today, [('func', parse)]))
   brick_ids = set(idx for _, _, idx, _ in bricks)
   play_tetris(bricks)
   print(f'{today} star 1 = {sum(len(chain_reaction(idx, part1=True)) == 0 for idx in brick_ids)}')
