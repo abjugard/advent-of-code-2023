@@ -14,11 +14,11 @@ def play_tetris(bricks):
   while brick_q:
     z_min, z_max, idx, brick = brick_q.popleft()
     max_z, overlaps = 0, []
-    for i, (b, z) in settled.items():
-      if brick & b:
-        mz = max(z)
+    for o_idx, (o_brick, o_zr) in settled.items():
+      if brick & o_brick:
+        mz = max(o_zr)
         max_z = max(max_z, mz)
-        overlaps.append((mz, (i, b, z)))
+        overlaps.append((mz, (o_idx, o_brick, o_zr)))
     overlaps = [t for mz, t in overlaps if mz == max_z]
     while idx not in settled:
       zr = range(z_min, z_max)
@@ -50,10 +50,10 @@ def chain_reaction(brick_id, is_falling=set(), part1=False):
 def parse(line):
   global idx
   ts = line.split('~')
-  (xs, xe), (ys, ye), (zs, ze) = zip(*[ints(t.split(',')) for t in ts])
-  ps = product(range(xs, xe+1), range(ys, ye+1))
+  (x_s, x_e), (y_s, y_e), (z_s, z_e) = zip(*[ints(t.split(',')) for t in ts])
+  ps = product(range(x_s, x_e+1), range(y_s, y_e+1))
   idx += 1
-  return zs, ze+1, idx, set(ps)
+  return z_s, z_e+1, idx, set(ps)
 
 
 def main():
