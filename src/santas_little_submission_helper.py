@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Callable, Iterator
 from santas_little_helpers import aoc_root, config
 from io import StringIO
+from math import ceil
 
 aoc_submission_history = aoc_root / '.submission-history'
 aoc_response_time_re = re.compile(r'You have ((?P<minutes>[\d]+)m |)(?P<seconds>[\d]+)s left to wait.')
@@ -26,7 +27,7 @@ def get_submission_history(today: date, level: int):
 def wait_until(unlock_time):
   while datetime.now() < unlock_time:
     delta = unlock_time - datetime.now()
-    print(f'\rThrottled, waiting {delta.total_seconds()} seconds before retry...', end='', flush=True)
+    print(f'\rThrottled, waiting {ceil(delta.total_seconds())} seconds before retry...', end='', flush=True)
     sleep(0.1)
   print()
 
