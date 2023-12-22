@@ -30,8 +30,9 @@ def play_tetris(bricks):
           settled[idx] = (brick, zr)
           supports_for[o_idx].add(idx)
           supported_by[idx].add(o_idx)
-      z_min -= 1
-      z_max -= 1
+      skip = z_min-max_z-1 if max_z else z_min-1
+      z_min -= skip
+      z_max -= skip
 
 
 def chain_reaction(brick_id, is_falling=set(), part1=False):
@@ -49,11 +50,10 @@ def chain_reaction(brick_id, is_falling=set(), part1=False):
 
 def parse(line):
   global idx
+  idx += 1
   ts = line.split('~')
   (x_s, x_e), (y_s, y_e), (z_s, z_e) = zip(*[ints(t.split(',')) for t in ts])
-  ps = product(range(x_s, x_e+1), range(y_s, y_e+1))
-  idx += 1
-  return z_s, z_e+1, idx, set(ps)
+  return z_s, z_e+1, idx, set(product(range(x_s, x_e+1), range(y_s, y_e+1)))
 
 
 def main():
