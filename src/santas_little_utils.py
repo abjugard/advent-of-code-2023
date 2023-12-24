@@ -107,5 +107,7 @@ def flatten(list_of_lists):
   return [item for l in list_of_lists for item in l]
 
 
-def ints(num_strings):
-  return list(map(int, num_strings))
+def ints(num_strings, split=None):
+  if split:
+    num_strings = [s.strip() for s in num_strings.split(split)]
+  return tuple(map(int, num_strings))

@@ -46,7 +46,7 @@ def parse(line):
   global idx
   idx += 1
   ts = line.split('~')
-  (x_s, x_e), (y_s, y_e), (z_s, z_e) = zip(*[ints(t.split(',')) for t in ts])
+  (x_s, x_e), (y_s, y_e), (z_s, z_e) = zip(*[ints(t, split=',') for t in ts])
   return z_s, z_e+1, idx, set(product(range(x_s, x_e+1), range(y_s, y_e+1)))
 
 
