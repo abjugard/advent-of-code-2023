@@ -1,10 +1,11 @@
 from santas_little_helpers import day, get_data, timed
 from santas_little_utils import ints
 from sympy import Point, Ray, Symbol, solve_poly_system
+from itertools import combinations
 
 today = day(2023, 24)
 
-min_test, max_test = 200000000000000, 400000000000000
+min_test, max_test = 2e14, 4e14
 
 
 def construct_ray(pos, vel):
@@ -19,37 +20,25 @@ def intersects(pos, vel, o_pos, o_vel):
 
   if ray1.is_parallel(ray2):
     return False
-  inter = ray1.intersection(ray2)
-  if inter:
-    i_x, i_y = inter[0]
+  if intersection := ray1.intersection(ray2):
+    i_x, i_y = intersection[0]
     if min_test <= i_x <= max_test and min_test <= i_y <= max_test:
       return True
   return False
 
 
 def intersections(hail):
-  s = 0
-  skip = set()
-  for eqn in hail:
-    for other in hail:
-      if eqn == other or (eqn, other) in skip:
-        continue
-      crosses = intersects(*eqn, *other)
-      skip.add((other, eqn))
-      s += crosses
-  return s
+  return sum(intersects(*eqn, *o_eqn) for eqn, o_eqn in combinations(hail, 2))
 
 
 def throw_rock(hail):
-  x, y, z, vx, vy, vz = syms = [Symbol(c) for c in 'x y z vx vy vz'.split()]
-  eqns = []
+  s_syms = [Symbol(c) for c in 'x y z'.split()]
+  v_syms = [Symbol(c) for c in 'vx vy vz'.split()]
+  eqns, syms = [], s_syms + v_syms
   for idx, (pos, vel) in enumerate(hail[:3]):
-    x_h, y_h, z_h = pos
-    vx_h, vy_h, vz_h = vel
-    t = Symbol('t'+str(idx))
-    eqns.append(x + t * vx - (x_h + t * vx_h))
-    eqns.append(y + t * vy - (y_h + t * vy_h))
-    eqns.append(z + t * vz - (z_h + t * vz_h))
+    t = Symbol(f't{idx}')
+    for s, v, s_h, v_h in zip(s_syms, v_syms, pos, vel):
+      eqns.append(s + t * v - (s_h + t * v_h))
     syms.append(t)
   x_rock, y_rock, z_rock, *_ = solve_poly_system(eqns, syms)[0]
   return int(x_rock + y_rock + z_rock)
